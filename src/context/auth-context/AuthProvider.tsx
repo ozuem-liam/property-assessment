@@ -43,7 +43,7 @@ export const AuthProvider = (props: IAuthProviderProps) => {
   useEffect(() => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
-      const user: any = JSON.parse(userStr);
+      const user: ILoginResponseData = JSON.parse(userStr);
       if (!loginRespData?.accessToken && user?.accessToken) {
         setLoginRespData(user);
       }

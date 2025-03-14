@@ -5,12 +5,22 @@ import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import SpinnerLoader from "../modals/SpinnerLoader";
+import { IProperty } from "@/api/property/types";
 
-const UpdateRateForm = ({ propertyRespData, onClose }: any) => {
+const UpdateRateForm = ({
+  propertyRespData,
+  onClose,
+}: {
+  propertyRespData: IProperty;
+  onClose: () => void;
+}) => {
   const [loading, setLoading] = useState(false);
   const [dateFrequency, setDateFrequency] = useState("single");
   const [singleDate, setSingleDate] = useState<Date | null>(new Date());
-  const [dateRange, setDateRange] = useState<any>([null, null]);
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+    null,
+    null,
+  ]);
   const [startDate, endDate] = dateRange;
   const [newRate, setNewRate] = useState(
     propertyRespData?.price?.basePrice || ""
@@ -30,11 +40,13 @@ const UpdateRateForm = ({ propertyRespData, onClose }: any) => {
     }
   };
 
-  const handleDateFrequencyChange = (e: any) => {
+  const handleDateFrequencyChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     setDateFrequency(e.target.value);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setLoading(true);
     e.preventDefault();
 
@@ -43,15 +55,15 @@ const UpdateRateForm = ({ propertyRespData, onClose }: any) => {
       // Create payload based on selection
       const payload = {
         propertyId: PROPERTY_ID,
-        newRate,
+        newRate: Number(newRate),
         date: singleDate,
       };
       await updatePropertySingleRate(payload);
-    } else {
+    } else if (startDate && endDate) {
       // Create payload based on selection
       const payload = {
         propertyId: PROPERTY_ID,
-        newRate,
+        newRate: Number(newRate),
         startDate,
         endDate,
       };
