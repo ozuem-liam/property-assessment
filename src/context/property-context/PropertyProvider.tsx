@@ -10,6 +10,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import { PROPERTY_ID } from "@/api/constant";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const PropertyContext = createContext<IPropertyContextProps>({
   getPropertyById: async () => {},
@@ -27,16 +28,15 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
 
   const { children } = props;
   const router = useRouter();
-  
+
   // get property by id
   const getPropertyById = async () => {
     if (isLoading) return;
-    
+
     setIsLoading(true);
     try {
-      const { isSuccess, message, data } = await PropertyService.getPropertyById(
-        PROPERTY_ID
-      );
+      const { isSuccess, message, data } =
+        await PropertyService.getPropertyById(PROPERTY_ID);
       if (isSuccess) {
         setPropertyRespData(data);
         if (!isInitialized) {
@@ -45,8 +45,19 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
       } else {
         toast.error(message);
       }
-    } catch (error) {
-      toast.error("Failed to fetch property data");
+    } catch (error: unknown) {
+      let errorMessage = "Error occurred";
+
+      // Check if the error is an AxiosError
+      if (axios.isAxiosError(error)) {
+        // Handle Axios-specific errors
+        errorMessage = error.response?.data?.message || error.message;
+      } else if (error instanceof Error) {
+        // Handle generic JavaScript errors
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
       setIsInitialized(true);
@@ -59,7 +70,9 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
   ) => {
     try {
       const { isSuccess, message } =
-        await PropertyService.updatePropertySingleRate(updateRateSingleDateData);
+        await PropertyService.updatePropertySingleRate(
+          updateRateSingleDateData
+        );
       if (isSuccess) {
         toast.success(message);
         await getPropertyById(); // Refresh property data after update
@@ -67,7 +80,18 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
         toast.error(message);
       }
     } catch (error) {
-      toast.error("Failed to update property rate");
+      let errorMessage = "Error occurred";
+
+      // Check if the error is an AxiosError
+      if (axios.isAxiosError(error)) {
+        // Handle Axios-specific errors
+        errorMessage = error.response?.data?.message || error.message;
+      } else if (error instanceof Error) {
+        // Handle generic JavaScript errors
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     }
   };
 
@@ -87,7 +111,18 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
         toast.error(message);
       }
     } catch (error) {
-      toast.error("Failed to update property rates");
+      let errorMessage = "Error occurred";
+
+      // Check if the error is an AxiosError
+      if (axios.isAxiosError(error)) {
+        // Handle Axios-specific errors
+        errorMessage = error.response?.data?.message || error.message;
+      } else if (error instanceof Error) {
+        // Handle generic JavaScript errors
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     }
   };
 
@@ -97,7 +132,7 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
       router.push("/login");
       return;
     }
-    
+
     // Only fetch property data on initial mount
     if (!isInitialized) {
       getPropertyById();
