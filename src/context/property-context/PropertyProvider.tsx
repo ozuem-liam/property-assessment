@@ -1,3 +1,95 @@
+// "use client";
+// import React, { createContext, useContext, useEffect, useState } from "react";
+// import { IPropertyContextProps, IPropertyProviderProps } from "./types";
+// import { PropertyService } from "@/api/property";
+// import {
+//   IProperty,
+//   UpdateRateMultipleDateData,
+//   UpdateRateSingleDateData,
+// } from "@/api/property/types";
+// import { ToastContainer, toast } from "react-toastify";
+// import { PROPERTY_ID } from "@/api/constant";
+// import { useRouter } from "next/navigation";
+
+// const PropertyContext = createContext<IPropertyContextProps>({
+//   getPropertyById: async () => {},
+//   updatePropertySingleRate: async () => {},
+//   updatePropertyMultipleRate: async () => {},
+//   propertyRespData: null,
+// });
+
+// export const PropertyProvider = (props: IPropertyProviderProps) => {
+//   const [propertyRespData, setPropertyRespData] = useState<IProperty | null>(
+//     null
+//   );
+
+//   const { children } = props;
+//   const router = useRouter();
+//   // get property by id
+//   const getPropertyById = async () => {
+//     const { isSuccess, message, data } = await PropertyService.getPropertyById(
+//       PROPERTY_ID
+//     );
+//     if (isSuccess) {
+//       setPropertyRespData(data);
+//       toast.success(message);
+//     } else {
+//       toast.error(message);
+//     }
+//   };
+
+//   // update property single rate date
+//   const updatePropertySingleRate = async (
+//     updateRateSingleDateData: UpdateRateSingleDateData
+//   ) => {
+//     const { isSuccess, message } =
+//       await PropertyService.updatePropertySingleRate(updateRateSingleDateData);
+//     if (isSuccess) {
+//       toast.success(message);
+//     } else {
+//       toast.error(message);
+//     }
+//   };
+
+//   // update property multiple rate date
+//   const updatePropertyMultipleRate = async (
+//     updateRateMultipleDateData: UpdateRateMultipleDateData
+//   ) => {
+//     const { isSuccess, message } =
+//       await PropertyService.updatePropertyMultipleRate(
+//         updateRateMultipleDateData
+//       );
+//     if (isSuccess) {
+//       toast.success(message);
+//     } else {
+//       toast.error(message);
+//     }
+//   };
+
+//   useEffect(() => {
+//     const userStr = localStorage.getItem("user");
+//     if (!userStr) {
+//       router.push("/login");
+//     }
+//     getPropertyById();
+//   }, []);
+
+//   return (
+//     <PropertyContext.Provider
+//       value={{
+//         getPropertyById,
+//         updatePropertySingleRate,
+//         updatePropertyMultipleRate,
+//         propertyRespData,
+//       }}
+//     >
+//       {children}
+//       <ToastContainer />
+//     </PropertyContext.Provider>
+//   );
+// };
+
+// export const useProperty = () => useContext(PropertyContext);
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { IPropertyContextProps, IPropertyProviderProps } from "./types";
@@ -22,22 +114,34 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
   const [propertyRespData, setPropertyRespData] = useState<IProperty | null>(
     null
   );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   const { children } = props;
   const router = useRouter();
+  
   // get property by id
   const getPropertyById = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
     try {
-      const { isSuccess, message, data } =
-        await PropertyService.getPropertyById(PROPERTY_ID);
+      const { isSuccess, message, data } = await PropertyService.getPropertyById(
+        PROPERTY_ID
+      );
       if (isSuccess) {
         setPropertyRespData(data);
-        toast.success(message);
+        if (!isInitialized) {
+          toast.success(message);
+        }
       } else {
         toast.error(message);
       }
-    } catch (error: any) {
-      toast.error(error?.message || "Error occured");
+    } catch (error) {
+      toast.error("Failed to fetch property data");
+    } finally {
+      setIsLoading(false);
+      setIsInitialized(true);
     }
   };
 
@@ -47,16 +151,15 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
   ) => {
     try {
       const { isSuccess, message } =
-        await PropertyService.updatePropertySingleRate(
-          updateRateSingleDateData
-        );
+        await PropertyService.updatePropertySingleRate(updateRateSingleDateData);
       if (isSuccess) {
         toast.success(message);
+        await getPropertyById(); // Refresh property data after update
       } else {
         toast.error(message);
       }
-    } catch (error: any) {
-      toast.error(error?.message || "Error occured");
+    } catch (error) {
+      toast.error("Failed to update property rate");
     }
   };
 
@@ -71,11 +174,12 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
         );
       if (isSuccess) {
         toast.success(message);
+        await getPropertyById(); // Refresh property data after update
       } else {
         toast.error(message);
       }
-    } catch (error: any) {
-      toast.error(error?.message || "Error occured");
+    } catch (error) {
+      toast.error("Failed to update property rates");
     }
   };
 
@@ -83,8 +187,13 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
     const userStr = localStorage.getItem("user");
     if (!userStr) {
       router.push("/login");
+      return;
     }
-    getPropertyById();
+    
+    // Only fetch property data on initial mount
+    if (!isInitialized) {
+      getPropertyById();
+    }
   }, []);
 
   return (

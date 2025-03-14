@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export interface IApiResponse<T> {
   isSuccess: boolean;
   message: string;
@@ -12,10 +14,21 @@ export class GlobalResponseHandler {
       data
     }
   }
-  static handleErrorResponse(message: string): IApiResponse<null> {
+  static handleErrorResponse(error: unknown): IApiResponse<null> {
+    let errorMessage = "Something failed. Try again later.";
+
+    // Check if the error is an AxiosError
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      errorMessage = error.response?.data?.message || error.message;
+    } else if (error instanceof Error) {
+      // Handle generic JavaScript errors
+      errorMessage = error.message;
+    }
+    
     return {
       isSuccess: false,
-      message,
+      message: errorMessage,
       data: null
     }
   }

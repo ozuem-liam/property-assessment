@@ -19,10 +19,8 @@ export class AuthService {
         resp.data,
         message
       );
-    } catch (error: any) {
-      const errorMessage =
-        error?.message || "Something failed, Try again later";
-      return GlobalResponseHandler.handleErrorResponse(errorMessage);
+    } catch (error: unknown) {
+      return GlobalResponseHandler.handleErrorResponse(error);
     }
   }
 }
