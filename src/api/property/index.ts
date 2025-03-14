@@ -50,8 +50,7 @@ export class PropertyService {
           headers,
         }
       );
-      console.log({ whole: resp });
-      const message = "Property single rate updated successfully";
+      const message = resp?.data?.message || "Property single rate updated successfully";
       return GlobalResponseHandler.handleSuccessResponse<UpdateRateDateResponce>(
         resp.data,
         message
@@ -79,7 +78,7 @@ export class PropertyService {
           headers,
         }
       );
-      const message = "Property multiple rate updated successfully";
+      const message = resp?.data?.message || "Property multiple rate updated successfully";
       return GlobalResponseHandler.handleSuccessResponse<UpdateRateDateResponce>(
         resp.data,
         message

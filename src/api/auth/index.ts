@@ -1,21 +1,28 @@
 import axios from "axios";
 import { BASE_API_URL } from "../constant";
 import { ILoginResponseData } from "./types";
+import { GlobalResponseHandler, IApiResponse } from "../response.helper";
 
 export class AuthService {
   static async login(
     email: string,
     password: string
-  ): Promise<ILoginResponseData> {
+  ): Promise<IApiResponse<ILoginResponseData | null>> {
     try {
       const payload = {
         email,
-        password
-      }
+        password,
+      };
       const resp = await axios.post(BASE_API_URL + `/auth/login`, payload);
-      return resp.data;
+      const message = "Login successfully";
+      return GlobalResponseHandler.handleSuccessResponse<ILoginResponseData>(
+        resp.data,
+        message
+      );
     } catch (error: any) {
-      return error;
+      const errorMessage =
+        error?.message || "Something failed, Try again later";
+      return GlobalResponseHandler.handleErrorResponse(errorMessage);
     }
   }
 }

@@ -28,14 +28,20 @@ export const AuthProvider = (props: IAuthProviderProps) => {
   const router = useRouter();
   const login = async (email: string, password: string) => {
     try {
-      const resp = await AuthService.login(email, password);
-      setLoginRespData(resp);
-      localStorage.setItem("user", JSON.stringify(resp));
-      toast.success("Login Successful");
-      router.push("/property/details");
+      const { isSuccess, message, data } = await AuthService.login(
+        email,
+        password
+      );
+      if (isSuccess && data) {
+        setLoginRespData(data);
+        localStorage.setItem("user", JSON.stringify(data));
+        toast.success(message);
+        router.push("/property/details");
+      } else {
+        toast.error(message);
+      }
     } catch (error: any) {
-      console.log({ error });
-      toast.error(error);
+      toast.error(error?.message || "Error occured");
     }
   };
   useEffect(() => {

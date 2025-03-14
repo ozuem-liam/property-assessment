@@ -4,7 +4,6 @@ import { IPropertyContextProps, IPropertyProviderProps } from "./types";
 import { PropertyService } from "@/api/property";
 import {
   IProperty,
-  UpdateRateDateTypeResponse,
   UpdateRateMultipleDateData,
   UpdateRateSingleDateData,
 } from "@/api/property/types";
@@ -23,8 +22,6 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
   const [propertyRespData, setPropertyRespData] = useState<IProperty | null>(
     null
   );
-  const [updateResponseData, setUpdateResponseData] =
-    useState<UpdateRateDateTypeResponse>(null);
 
   const { children } = props;
   const router = useRouter();
@@ -49,12 +46,11 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
     updateRateSingleDateData: UpdateRateSingleDateData
   ) => {
     try {
-      const { isSuccess, message, data } =
+      const { isSuccess, message } =
         await PropertyService.updatePropertySingleRate(
           updateRateSingleDateData
         );
       if (isSuccess) {
-        setUpdateResponseData(data);
         toast.success(message);
       } else {
         toast.error(message);
@@ -69,12 +65,11 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
     updateRateMultipleDateData: UpdateRateMultipleDateData
   ) => {
     try {
-      const { isSuccess, message, data } =
+      const { isSuccess, message } =
         await PropertyService.updatePropertyMultipleRate(
           updateRateMultipleDateData
         );
       if (isSuccess) {
-        setUpdateResponseData(data);
         toast.success(message);
       } else {
         toast.error(message);
@@ -91,7 +86,7 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
     }
     getPropertyById();
   }, []);
-  
+
   return (
     <PropertyContext.Provider
       value={{
