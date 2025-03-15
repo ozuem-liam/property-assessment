@@ -1,5 +1,11 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { IPropertyContextProps, IPropertyProviderProps } from "./types";
 import { PropertyService } from "@/api/property";
 import {
@@ -22,7 +28,7 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
   const [propertyRespData, setPropertyRespData] = useState<IProperty | null>(
     null
   );
-
+  const isFetchedRef = useRef<boolean>(false);
   const { children } = props;
   const router = useRouter();
   // get property by id
@@ -71,9 +77,14 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
     if (!userStr) {
       router.push("/login");
     }
-    console.log("twice on")
-    getPropertyById();
-  }, []);
+
+    // Only fetch if we haven't already
+    if (!isFetchedRef.current) {
+      isFetchedRef.current = true;
+      getPropertyById();
+    }
+    // getPropertyById();
+  }, [router]);
 
   return (
     <PropertyContext.Provider
