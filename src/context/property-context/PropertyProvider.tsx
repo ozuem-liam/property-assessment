@@ -38,7 +38,7 @@ export const PropertyProvider = (props: IPropertyProviderProps) => {
     );
     if (isSuccess) {
       setPropertyRespData(data);
-      toast.success(message);
+      // toast.success(message);
     } else {
       toast.error(message);
     }
